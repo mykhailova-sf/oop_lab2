@@ -1,5 +1,6 @@
 import { api } from "../config/api.config";
-import type { ConsultationRequest, ConsultationResponse } from "../types/consultationTypes";
+import type { AppointmentRequest } from "../types/appointmentTypes";
+import type { ConsultationRequest } from "../types/consultationTypes";
 import type { Role, UserLogin, UserRequest } from "../types/userTypes";
 
 // auth
@@ -28,8 +29,32 @@ export const postConsultation = (
    consultation: ConsultationRequest
 ): Promise<void> => api.post("/consultations", consultation);
 
-type ConsultationPathRequest = Partial<ConsultationResponse>;
+type CompleteConsultationRequest = {
+   id: number;
+   status: "completed";
+   diagnosis: string;
+   prescription: string;
+};
 
-export const patchConsultation = (
-   consultation: ConsultationPathRequest
-): Promise<void> => api.patch("/consultations", consultation);
+export const completeConsultation = (
+   consultationComplete: CompleteConsultationRequest
+): Promise<void> =>
+   api.patch(
+      `/consultations/${consultationComplete.id}/complete`,
+      consultationComplete
+   );
+
+export const declineConsultation = (id: number): Promise<void> =>
+   api.patch(`/consultations/${id}/decline`, { id, status: "declined" });
+
+// appointments
+
+export const postAppointment = (
+   appointment: AppointmentRequest
+): Promise<void> => api.post("/appointments", appointment);
+
+export const executeAppointment = (id: number): Promise<void> =>
+   api.patch(`/appointments/${id}/complete`, { id, status: "completed" });
+
+export const declineAppointment = (id: number): Promise<void> =>
+   api.patch(`/appointments/${id}/decline`, { id, status: "declined" });

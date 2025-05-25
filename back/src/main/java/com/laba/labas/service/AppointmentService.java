@@ -50,7 +50,7 @@ public class AppointmentService {
                 .patient(patient)
                 .doctor(doctor)
                 .appointmentType(appointmentRequestDto.getAppointmentType())
-                .status(Appointment.Status.PENDING)
+                .status(Appointment.Status.pending)
                 .build();
         
         Appointment savedAppointment = appointmentRepository.save(appointment);
@@ -91,10 +91,10 @@ public class AppointmentService {
     }
     
     @Transactional(readOnly = true)
-    public List<AppointmentResponseDto> getAppointmentsByPatient(Long patientId) {
+    public List<AppointmentResponseDto> getAppointmentsByPatient(String patientId) {
         log.info("Getting appointments for patient ID: {}", patientId);
         
-        User patient = userRepository.findById(patientId)
+        User patient = userRepository.findByEmail(patientId)
                 .orElseThrow(() -> {
                     log.error("Patient with ID {} not found", patientId);
                     return new EntityNotFoundException("Patient not found");

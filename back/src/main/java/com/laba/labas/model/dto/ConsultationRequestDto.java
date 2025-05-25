@@ -11,15 +11,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ConsultationRequestDto {
-    
+
 //    @NotNull(message = "Patient ID is required")
     private Long patientId;
-    
+
 //    @NotNull(message = "Doctor ID is required")
     private Long doctorId;
     private String status;
-//
-//    private String diagnosis;
-//
-//    private String prescription;
+
+    private String diagnosis;
+
+    private String prescription;
 }

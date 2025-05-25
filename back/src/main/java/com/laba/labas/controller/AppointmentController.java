@@ -38,12 +38,7 @@ public class AppointmentController {
 
         if (type != null) {
             try {
-                // Handle the "syrgery" typo from the API spec
-                if ("syrgery".equalsIgnoreCase(type)) {
-                    type = "surgery";
-                }
-
-                Appointment.AppointmentType appointmentType = Appointment.AppointmentType.valueOf(type.toUpperCase());
+                Appointment.AppointmentType appointmentType = Appointment.AppointmentType.valueOf(type.toLowerCase());
                 List<AppointmentResponseDto> appointments = appointmentService.getAppointmentsByType(appointmentType);
                 log.info("Retrieved {} appointments with type: {}", appointments.size(), type);
                 return ResponseEntity.ok(appointments);
@@ -73,6 +68,22 @@ public class AppointmentController {
         log.info("Updating appointment status to {} for ID: {}", status, id);
         AppointmentResponseDto appointmentResponseDto = appointmentService.updateAppointmentStatus(id, status);
         log.info("Appointment status updated successfully");
+        return ResponseEntity.ok(appointmentResponseDto);
+    }
+
+    @PatchMapping("/{id}/complete")
+    public ResponseEntity<AppointmentResponseDto> completeAppointment(@PathVariable Long id) {
+        log.info("Completing appointment with ID: {}", id);
+        AppointmentResponseDto appointmentResponseDto = appointmentService.updateAppointmentStatus(id, Appointment.Status.completed);
+        log.info("Appointment completed successfully");
+        return ResponseEntity.ok(appointmentResponseDto);
+    }
+
+    @PatchMapping("/{id}/decline")
+    public ResponseEntity<AppointmentResponseDto> declineAppointment(@PathVariable Long id) {
+        log.info("Declining appointment with ID: {}", id);
+        AppointmentResponseDto appointmentResponseDto = appointmentService.updateAppointmentStatus(id, Appointment.Status.declined);
+        log.info("Appointment declined successfully");
         return ResponseEntity.ok(appointmentResponseDto);
     }
 }

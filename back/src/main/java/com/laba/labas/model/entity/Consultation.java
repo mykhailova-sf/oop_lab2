@@ -47,6 +47,6 @@ public class Consultation {
     private LocalDateTime updatedAt;
 
     public enum Status {
-        PENDING, DECLINED, COMPLETED
+        pending, declined, completed
     }
 }

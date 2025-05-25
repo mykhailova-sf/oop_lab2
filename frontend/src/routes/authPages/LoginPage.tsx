@@ -4,6 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "react-router";
 import { routes } from "../../config/routes.config";
 import { postLogin } from "../../api/mutations";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "../../config/queryKeys";
 
 const loginSchema = z.object({
    email: z.string().email({ message: "Invalid email address" }),
@@ -12,6 +14,9 @@ const loginSchema = z.object({
       .min(6, { message: "Password must be at least 6 characters" })
 });
 
+function wait(seconds: number): Promise<void> {
+   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+}
 type LoginFormInputs = z.infer<typeof loginSchema>;
 
 function LoginPage() {
@@ -25,8 +30,12 @@ function LoginPage() {
 
    const navigate = useNavigate();
 
+   const queryClient = useQueryClient();
+
    const onSubmit = async (data: LoginFormInputs) => {
       await postLogin(data);
+      queryClient.invalidateQueries({ queryKey: queryKeys.currentUser });
+      await wait(1);
       navigate(routes.profile);
    };
 

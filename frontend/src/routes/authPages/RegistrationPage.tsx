@@ -4,6 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "react-router";
 import { routes } from "../../config/routes.config";
 import { postRegistration } from "../../api/mutations";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "../../config/queryKeys";
 
 const registrationSchema = z.object({
    firstName: z.string().min(2, { message: "First name is too short" }),
@@ -13,6 +15,10 @@ const registrationSchema = z.object({
       .string()
       .min(6, { message: "Password must be at least 6 characters" })
 });
+
+function wait(seconds: number): Promise<void> {
+   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+}
 
 type RegistrationFormInputs = z.infer<typeof registrationSchema>;
 
@@ -27,8 +33,12 @@ function RegistrationPage() {
 
    const navigate = useNavigate();
 
+   const queryClient = useQueryClient();
+
    const onSubmit = async (data: RegistrationFormInputs) => {
       await postRegistration({ role: "PATIENT", ...data });
+      queryClient.invalidateQueries({ queryKey: queryKeys.currentUser });
+      await wait(1);
       navigate(routes.profile);
    };
 

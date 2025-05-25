@@ -1,26 +1,29 @@
-import { UserIcon } from "@heroicons/react/24/outline";
 import type { UserResponse } from "../types/userTypes";
-import { useRef } from "react";
+import {  useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { postConsultation } from "../api/mutations";
 import { useAtomValue } from "jotai";
 import { userAtom } from "../store/atoms";
+import { Modal, useCloseModal } from "./theme/Modal";
+import { DoctorIcon } from "../assets/icons";
 
 function DoctorCard({ doctor }: { doctor: UserResponse }) {
-   const dialogRef = useRef<HTMLDialogElement | null>(null);
+   const { closeModalButtonRef, closeModal } = useCloseModal();
 
-   const { mutate: scheduleAsync, isPending } = useMutation({
+   const { mutateAsync: scheduleAsync, isPending } = useMutation({
       mutationFn: postConsultation
    });
 
-   const user = useAtomValue(userAtom);
+   const [date, setDate] = useState("");
 
+   const user = useAtomValue(userAtom);
    const schedule = async () => {
-      scheduleAsync({
+      await scheduleAsync({
          patientId: user?.id || 1,
          doctorId: doctor.id,
          status: "pending"
       });
+      closeModal();
    };
 
    return (
@@ -28,7 +31,7 @@ function DoctorCard({ doctor }: { doctor: UserResponse }) {
          <div className="flex gap-4">
             <div className="avatar">
                <div className="w-12 rounded-xl">
-                  <UserIcon className="w-full" />
+                  <DoctorIcon />
                </div>
             </div>
             <div>
@@ -38,37 +41,48 @@ function DoctorCard({ doctor }: { doctor: UserResponse }) {
                <div>{doctor.doctorSpecialty}</div>
             </div>
             <div className="ml-auto">
-               <button
-                  className="btn btn-secondary"
-                  onClick={() =>
-                     dialogRef.current && dialogRef.current.showModal()
+               <Modal
+                  trigger={
+                     <button className="btn btn-secondary">
+                        Schedule a consultation
+                     </button>
                   }
-               >
-                  Schedule a consultation
-               </button>
-               <dialog ref={dialogRef} className="modal">
-                  <div className="modal-box">
-                     <h3 className="font-bold text-xl text-center">
-                        Some scheduling form
-                     </h3>
-                     <p className=" text-center">
-                        Lorem ipsum dolor sit amet, consectetur adipisicing
-                        elit. Aperiam ratione ea fugit minus iusto id iure
-                     </p>
-                     <div className="flex gap-4 justify-end">
-                        <form method="dialog">
-                           <button className="btn">Close</button>
-                        </form>
-                        <button
-                           className="btn btn-secondary"
-                           onClick={schedule}
-                           disabled={isPending}
-                        >
-                           {isPending ? "Submitting.." : "Submit"}
-                        </button>
-                     </div>
-                  </div>
-               </dialog>
+                  content={
+                     <>
+                        <h3 className="font-bold text-xl text-center">
+                           Schedule a consultations
+                        </h3>
+                        <div>
+                           <div className="flex justify-center my-4 gap-4">
+                              <span className="text-base-content/50">
+                                 Select the date:{" "}
+                              </span>
+                              <input
+                                 type="date"
+                                 value={date}
+                                 onChange={({ target }) =>
+                                    setDate(target.value)
+                                 }
+                              />
+                           </div>
+                        </div>
+                        <div className="flex gap-4 justify-center">
+                           <form method="dialog">
+                              <button ref={closeModalButtonRef} className="btn">
+                                 Close
+                              </button>
+                           </form>
+                           <button
+                              className="btn btn-secondary"
+                              onClick={schedule}
+                              disabled={isPending}
+                           >
+                              {isPending ? "Submitting.." : "Submit"}
+                           </button>
+                        </div>
+                     </>
+                  }
+               />
             </div>
          </div>
       </div>

@@ -37,4 +37,4 @@ export const getProcedures = (): Promise<AppointmentResponse[]> =>
    api.get("/appointments?type=procedure").then((res) => res.data);
 
 export const getSurgeries = (): Promise<AppointmentResponse[]> =>
-   api.get("/appointments?type=syrgery").then((res) => res.data);
+   api.get("/appointments?type=surgery").then((res) => res.data);

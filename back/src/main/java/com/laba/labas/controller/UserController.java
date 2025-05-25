@@ -38,15 +38,27 @@ public class UserController {
     @GetMapping("/current-user/consultations")
     public ResponseEntity<List<ConsultationResponseDto>> getCurrentUserConsultations(Principal principal) {
         log.info("Getting consultations for current user");
-        // In a real application, this would get the current user's ID from the security context
-        // For now, we'll just use a mock user with ID 1
-        List<ConsultationResponseDto> consultations = consultationService.getConsultationsByPatient(principal.getName());
-        log.info("Retrieved {} consultations for current user", consultations.size());
+
+        // Get the current user to check their role
+        UserResponseDto currentUser = userService.getUserByEmail(principal.getName());
+
+        List<ConsultationResponseDto> consultations;
+
+        // If the user is a doctor, get consultations where they are the doctor
+        if (currentUser.getRole() == User.Role.DOCTOR) {
+            consultations = consultationService.getConsultationsByDoctor(currentUser.getId());
+            log.info("Retrieved {} consultations for doctor with ID: {}", consultations.size(), currentUser.getId());
+        } else {
+            // Otherwise, get consultations where they are the patient
+            consultations = consultationService.getConsultationsByPatient(principal.getName());
+            log.info("Retrieved {} consultations for patient", consultations.size());
+        }
+
         return ResponseEntity.ok(consultations);
     }
 
     @GetMapping("/current-user/appointments")
-    public ResponseEntity<List<AppointmentResponseDto>> getCurrentUserAppointments(
+    public ResponseEntity<List<AppointmentResponseDto>> getCurrentUserAppointments(Principal principal,
             @RequestParam(required = false) String type) {
         log.info("Getting appointments for current user with type: {}", type);
         // In a real application, this would get the current user's ID from the security context
@@ -59,7 +71,7 @@ public class UserController {
                     type = "surgery";
                 }
 
-                Appointment.AppointmentType appointmentType = Appointment.AppointmentType.valueOf(type.toUpperCase());
+                Appointment.AppointmentType appointmentType = Appointment.AppointmentType.valueOf(type.toLowerCase());
                 List<AppointmentResponseDto> appointments = appointmentService.getAppointmentsByPatientAndType(1L, appointmentType);
                 log.info("Retrieved {} appointments for current user with type: {}", appointments.size(), type);
                 return ResponseEntity.ok(appointments);
@@ -69,7 +81,7 @@ public class UserController {
             }
         }
 
-        List<AppointmentResponseDto> appointments = appointmentService.getAppointmentsByPatient(1L);
+        List<AppointmentResponseDto> appointments = appointmentService.getAppointmentsByPatient(principal.getName());
         log.info("Retrieved {} appointments for current user", appointments.size());
         return ResponseEntity.ok(appointments);
     }

@@ -65,4 +65,33 @@ public class ConsultationController {
         log.info("Consultation updated successfully");
         return ResponseEntity.ok(consultationResponseDto);
     }
+
+    @PatchMapping("/{id}/decline")
+    public ResponseEntity<ConsultationResponseDto> declineConsultation(@PathVariable Long id) {
+        log.info("Declining consultation with ID: {}", id);
+        ConsultationResponseDto consultationResponseDto = consultationService.updateConsultationStatus(id, Consultation.Status.declined);
+        log.info("Consultation declined successfully");
+        return ResponseEntity.ok(consultationResponseDto);
+    }
+
+    @PatchMapping("/{id}/complete")
+    public ResponseEntity<ConsultationResponseDto> completeConsultation(
+            @PathVariable Long id,
+            @RequestBody(required = false) ConsultationRequestDto consultationRequestDto) {
+        String diagnosis = null;
+        String prescription = null;
+
+        if (consultationRequestDto != null) {
+            diagnosis = consultationRequestDto.getDiagnosis();
+            prescription = consultationRequestDto.getPrescription();
+        }
+
+        log.info("Completing consultation with ID: {} and diagnosis: {}, prescription: {}", id, diagnosis, prescription);
+
+        // Always use the diagnosis and prescription from the request body
+        ConsultationResponseDto consultationResponseDto = consultationService.completeConsultationWithDetails(id, diagnosis, prescription);
+
+        log.info("Consultation completed successfully");
+        return ResponseEntity.ok(consultationResponseDto);
+    }
 }

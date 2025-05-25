@@ -1,10 +1,13 @@
-import { useAtomValue } from "jotai";
-import { userAtom} from "../../store/atoms";
+import { useAtomValue, useSetAtom } from "jotai";
+import { userAtom } from "../../store/atoms";
 
-import { UserIcon } from "@heroicons/react/24/outline";
 import type { UserResponse } from "../../types/userTypes";
 import { Separator } from "../../components/Separator";
 import { GenerateCode } from "../../components/GenerateCode";
+import { RoleBasedIcon } from "../../components/RoleBasedIcon";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { postLogout } from "../../api/mutations";
+import { queryKeys } from "../../config/queryKeys";
 
 function ProfilePage() {
    const user = useAtomValue(userAtom);
@@ -16,9 +19,7 @@ function ProfilePage() {
             <section className="flex max-w-[600px] mx-auto mt-4 gap-4">
                <div>
                   <div className="avatar">
-                     <div className="w-24 rounded-xl">
-                        <UserIcon className="w-full" />
-                     </div>
+                     <RoleBasedIcon className="w-24" />
                   </div>
                   <p className="card py-1 px-2 border border-base-content/10 text-center bg-base-200/20 shadow">
                      {user.role}
@@ -101,7 +102,19 @@ function RoleBasedZone({ user }: { user: UserResponse }) {
       );
 }
 
-function DangerZone({ user }: { user: UserResponse }) {
+function DangerZone({ user: _ }: { user: UserResponse }) {
+   const queryClient = useQueryClient();
+
+   const setUser = useSetAtom(userAtom);
+
+   const { mutate, isPending } = useMutation({
+      mutationFn: postLogout,
+      onSuccess: () => {
+         queryClient.invalidateQueries({ queryKey: queryKeys.currentUser });
+         setUser(null);
+      }
+   });
+
    return (
       <section className="max-w-[600px] mx-auto mt-8">
          <div className="flex gap-2 items-center">
@@ -120,7 +133,13 @@ function DangerZone({ user }: { user: UserResponse }) {
                <span className="text-base-content/70">
                   Log out from the account
                </span>
-               <button className="btn">Logout</button>
+               <button
+                  className="btn"
+                  onClick={() => mutate()}
+                  disabled={isPending}
+               >
+                  {isPending ? "Logging out.." : "Logout"}
+               </button>
             </div>
 
             <div className="flex justify-between items-center">

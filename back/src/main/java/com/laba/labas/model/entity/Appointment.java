@@ -47,10 +47,10 @@ public class Appointment {
     private LocalDateTime updatedAt;
 
     public enum AppointmentType {
-        PROCEDURE, SURGERY
+        procedure, surgery
     }
 
     public enum Status {
-        PENDING, DECLINED, COMPLETED
+        pending, declined, completed
     }
 }
